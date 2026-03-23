@@ -5,14 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Open Book</title>
 
-<!-- FIREBASE V8 (FUNCIONA COM SEU CÓDIGO) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
 :root{
-  --bg:#030712;
+  --bg:#020617;
   --card:#0f172a;
   --yellow:#ffd60a;
   --blue:#38bdf8;
@@ -21,23 +20,23 @@
 
 body{
   margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:linear-gradient(180deg,#020617,#030712);
+  font-family:sans-serif;
+  background:#020617;
   color:#fff;
 }
 
-/* HEADER */
 header{
   text-align:center;
-  padding:20px;
-  font-size:24px;
-  color:var(--yellow);
+  padding:15px;
+  font-size:22px;
+  background:linear-gradient(45deg,var(--yellow),var(--blue));
+  -webkit-background-clip:text;
+  color:transparent;
 }
 
-/* NAV */
 nav{
   display:flex;
-  gap:8px;
+  gap:6px;
   padding:10px;
 }
 
@@ -45,116 +44,89 @@ nav button{
   flex:1;
   padding:12px;
   border:none;
-  border-radius:14px;
-  font-weight:bold;
+  border-radius:12px;
   background:linear-gradient(45deg,var(--yellow),var(--blue));
   color:#000;
+  font-weight:bold;
 }
 
-/* INPUT */
 input,select{
   width:100%;
   padding:12px;
   margin:6px 0;
+  border-radius:10px;
   border:none;
-  border-radius:14px;
-  background:#020617;
+  background:#0f172a;
   color:#fff;
-  border:1px solid #111;
 }
 
-/* SECTION */
-.section{padding:10px;}
-.section h2{color:var(--blue);}
-
-/* GRID */
 .grid{
   display:flex;
-  gap:12px;
+  gap:10px;
   overflow-x:auto;
+  padding:10px;
 }
 
-/* CARD */
 .card{
-  min-width:160px;
-  background:linear-gradient(145deg,#020617,#0f172a);
-  border-radius:18px;
+  min-width:180px;
+  background:#0f172a;
+  border-radius:14px;
   overflow:hidden;
-  position:relative;
-  box-shadow:0 0 15px rgba(0,0,0,.7);
-  transition:.3s;
 }
 
-.card:hover{
-  transform:translateY(-5px) scale(1.05);
-  box-shadow:0 0 25px rgba(56,189,248,.4);
+.card img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
 }
 
-.card img{width:100%;}
-
-.title{padding:6px;font-size:13px;}
-.genre{font-size:11px;padding:0 6px;color:var(--accent);}
-
-/* BADGE */
-.badge{
-  position:absolute;
-  top:6px;
-  left:6px;
-  background:var(--yellow);
-  color:#000;
-  padding:3px 6px;
-  border-radius:6px;
-  font-size:11px;
-}
-
-/* FAVORITO */
-.fav{
-  position:absolute;
-  top:6px;
-  right:6px;
-  cursor:pointer;
-}
-
-/* STARS */
-.stars{
-  display:flex;
-  justify-content:center;
-}
-
-.star{cursor:pointer;}
-
-/* DOWNLOAD */
-.download{
-  margin:6px;
+.info{
   padding:6px;
-  text-align:center;
-  border-radius:10px;
+  font-size:13px;
+}
+
+.rating{color:var(--yellow);}
+
+.download{
   background:linear-gradient(45deg,var(--yellow),var(--accent));
   color:#000;
-  font-weight:bold;
+  padding:6px;
+  margin:6px;
+  text-align:center;
+  border-radius:8px;
 }
 
-/* BOTÃO PUBLICAR */
-.publishBtn{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:16px;
-  font-size:16px;
-  font-weight:bold;
-  background:linear-gradient(45deg,var(--blue),var(--yellow));
-  color:#000;
-  box-shadow:0 0 20px rgba(56,189,248,.6);
+.trending{
+  position:absolute;
+  background:red;
+  padding:2px 6px;
+  font-size:12px;
 }
 
-/* SCREEN */
 .screen{display:none;}
-.active{display:block;animation:fade .3s;}
+.active{display:block;}
 
-@keyframes fade{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1;}
+#loader{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,.8);
+display:none;
+align-items:center;
+justify-content:center;
+flex-direction:column;
+z-index:999;
 }
+
+.spin{
+width:50px;height:50px;
+border:5px solid #333;
+border-top:5px solid yellow;
+border-radius:50%;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{to{transform:rotate(360deg);}}
 </style>
 </head>
 
@@ -164,211 +136,237 @@ input,select{
 
 <nav>
   <button onclick="trocar('home')">Explorar</button>
-  <button onclick="trocar('geral')">Geral</button>
   <button onclick="trocar('upload')">Publicar</button>
 </nav>
 
-<!-- HOME -->
+<input id="busca" placeholder="🔍 Buscar..." oninput="buscar()">
+
 <div id="home" class="screen active">
-  <div style="padding:10px;">
-    <input id="search" placeholder="Buscar..." oninput="buscar()">
-  </div>
-
-  <div class="section">
-    <h2>🔥 Trending</h2>
-    <div class="grid" id="trending"></div>
-  </div>
-
-  <div class="section">
-    <h2>🏆 Ranking</h2>
-    <div class="grid" id="ranking"></div>
-  </div>
+  <div class="grid" id="lista"></div>
 </div>
 
-<!-- GERAL -->
-<div id="geral" class="screen">
-  <div class="section">
-    <h2>📚 Todos os livros</h2>
-    <div class="grid" id="geralList"></div>
-  </div>
-</div>
-
-<!-- UPLOAD -->
 <div id="upload" class="screen">
-  <div style="padding:15px;">
-    <input id="titulo" placeholder="Título">
-    <input id="autor" placeholder="Autor">
+  <input id="titulo" placeholder="Título">
+  <input id="autor" placeholder="Autor">
 
-    <select id="publico">
-      <option>livre</option>
-      <option>jovem</option>
-      <option>adulto</option>
-    </select>
+  <select id="publico">
+    <option>livre</option>
+    <option>jovem</option>
+    <option>adulto</option>
+  </select>
 
-    <select id="genero">
-      <option>Fantasia</option>
-      <option>Romance</option>
-      <option>Terror</option>
-      <option>Ficção</option>
-      <option>Ação</option>
-      <option>Outro</option>
-    </select>
+  <select id="genero">
+    <option>Fantasia</option>
+    <option>Romance</option>
+    <option>Terror</option>
+    <option>Ficção</option>
+  </select>
 
-    <input type="file" id="pdf" accept="application/pdf">
+  <input type="file" id="pdf" accept="application/pdf">
+  <button onclick="uploadLivro()">🚀 Publicar</button>
+</div>
 
-    <button class="publishBtn" onclick="uploadLivro()">🚀 Publicar Livro</button>
-  </div>
+<div id="loader">
+  <div class="spin"></div>
+  <p>Processando...</p>
 </div>
 
 <script>
-// CONFIG FIREBASE
 const firebaseConfig={
   apiKey:"SUA_API_KEY",
-  databaseURL:"https://cintaslivro-default-rtdb.firebaseio.com/",
-  projectId:"cintaslivro",
-  storageBucket:"cintaslivro.appspot.com"
+  databaseURL:"https://cintaslivro-default-rtdb.firebaseio.com/"
 };
 
 firebase.initializeApp(firebaseConfig);
-
 const db=firebase.database();
-const storage=firebase.storage();
 
-let fav=JSON.parse(localStorage.getItem("fav"))||{};
+let livrosMap={};
+let cache=JSON.parse(localStorage.getItem("cache"))||{};
 
-// TROCAR TELA
+// trocar tela
 function trocar(t){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(t).classList.add("active");
 }
 
-// UPLOAD
-async function uploadLivro(){
-  try{
-    let file=document.getElementById("pdf").files[0];
-    if(!file) return alert("Selecione um PDF");
+// capa
+async function gerarCapa(base64){
+  const pdf=await pdfjsLib.getDocument(base64).promise;
+  const page=await pdf.getPage(1);
 
-    let ref=storage.ref("livros/"+Date.now()+"_"+file.name);
+  const viewport=page.getViewport({scale:0.5});
+  const canvas=document.createElement("canvas");
+  const ctx=canvas.getContext("2d");
 
-    await ref.put(file);
+  canvas.width=viewport.width;
+  canvas.height=viewport.height;
 
-    let url=await ref.getDownloadURL();
+  await page.render({canvasContext:ctx,viewport}).promise;
 
-    await db.ref("livros").push({
-      id:Date.now(),
+  return canvas.toDataURL("image/jpeg",0.6);
+}
+
+// upload
+function uploadLivro(){
+  const file=pdf.files[0];
+  if(!file) return alert("Selecione PDF");
+
+  // limite anti travamento (2MB)
+  if(file.size > 2*1024*1024){
+    return alert("PDF muito grande (máx 2MB)");
+  }
+
+  loader.style.display="flex";
+
+  const reader=new FileReader();
+
+  reader.onload=async function(e){
+    const base64=e.target.result;
+    const capa=await gerarCapa(base64);
+
+    const id=Date.now();
+
+    db.ref("livros/"+id).set({
+      id,
       titulo:titulo.value,
       autor:autor.value,
       publico:publico.value,
       genero:genero.value,
-      url,
+      pdf:base64,
+      capa,
       totalStars:0,
       votes:0,
-      views:0
+      downloads:0,
+      createdAt:Date.now()
     });
 
-    alert("Publicado com sucesso 🚀");
+    loader.style.display="none";
+    alert("Publicado 🚀");
+  };
 
-  }catch(e){
-    console.error(e);
-    alert("Erro ao publicar");
-  }
+  reader.readAsDataURL(file);
 }
 
-// AVALIAR
+// avaliar
 function avaliar(id,n){
-  db.ref("livros").once("value",snap=>{
-    snap.forEach(i=>{
-      let l=i.val();
-      if(l.id==id){
-        db.ref("livros/"+i.key).update({
-          totalStars:(l.totalStars||0)+n,
-          votes:(l.votes||0)+1
-        });
-      }
+  db.ref("livros/"+id).once("value",snap=>{
+    let l=snap.val();
+    db.ref("livros/"+id).update({
+      totalStars:(l.totalStars||0)+n,
+      votes:(l.votes||0)+1
     });
   });
 }
 
-// VIEW
-function addView(id){
-  db.ref("livros").once("value",snap=>{
-    snap.forEach(i=>{
-      let l=i.val();
-      if(l.id==id){
-        db.ref("livros/"+i.key).update({
-          views:(l.views||0)+1
-        });
-      }
-    });
-  });
+// download
+function baixarLivro(id){
+  let l=livrosMap[id];
+  if(!l) return;
+
+  loader.style.display="flex";
+
+  setTimeout(()=>{
+    const arr=l.pdf.split(',');
+    const bstr=atob(arr[1]);
+
+    let n=bstr.length;
+    const u8arr=new Uint8Array(n);
+
+    while(n--) u8arr[n]=bstr.charCodeAt(n);
+
+    const blob=new Blob([u8arr],{type:"application/pdf"});
+    const url=URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=l.titulo+".pdf";
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    db.ref("livros/"+id+"/downloads")
+      .transaction(v=>(v||0)+1);
+
+    loader.style.display="none";
+  },300);
 }
 
-// FAVORITO
-function toggleFav(id){
-  fav[id]=!fav[id];
-  localStorage.setItem("fav",JSON.stringify(fav));
-  carregar();
-}
-
-// CARD
-function card(l,b){
+// score trending
+function score(l){
   let media=l.votes?l.totalStars/l.votes:0;
-  let f=fav[l.id]?"❤️":"🤍";
+  let tempo=(Date.now()-l.createdAt)/10000000;
+  let boost=Math.max(0,10-tempo);
+
+  return (media*2)+(l.votes*0.3)+(l.downloads*0.5)+boost;
+}
+
+// card
+function card(l,i){
+  let media=l.votes?(l.totalStars/l.votes).toFixed(1):"0.0";
 
   return `
   <div class="card">
-    ${b?`<div class="badge">${b}</div>`:""}
-    <div class="fav" onclick="toggleFav(${l.id})">${f}</div>
-
-    <img src="https://image.thum.io/get/pdf/${l.url}" onclick="addView(${l.id})">
-
-    <div class="title">${l.titulo}</div>
-    <div class="genre">${l.genero}</div>
-
-    <div class="stars">
-      ${[1,2,3,4,5].map(n=>`
-        <span class="star" onclick="avaliar(${l.id},${n})">
-          ${n<=Math.round(media)?"⭐":"☆"}
-        </span>`).join("")}
+    ${i<3?`<div class="trending">🔥</div>`:""}
+    <img src="${l.capa}">
+    <div class="info">
+      <b>${l.titulo}</b><br>
+      ${l.autor}<br>
+      ${l.publico} • ${l.genero}<br>
+      <div class="rating">⭐ ${media}</div>
     </div>
 
-    <a href="${l.url}" download onclick="addView(${l.id})">
-      <div class="download">⬇ Baixar</div>
-    </a>
+    <div class="download" onclick="baixarLivro(${l.id})">
+      ⬇ Baixar
+    </div>
+
+    <div style="text-align:center;">
+      ${[1,2,3,4,5].map(n=>`
+        <span onclick="avaliar(${l.id},${n})">⭐</span>
+      `).join("")}
+    </div>
   </div>`;
 }
 
-// REALTIME
+// busca
+function buscar(){
+  let termo=busca.value.toLowerCase();
+
+  let filtrados=Object.values(livrosMap).filter(l=>{
+    let txt=(l.titulo+l.autor+l.genero+l.publico).toLowerCase();
+    return txt.includes(termo);
+  });
+
+  render(filtrados);
+}
+
+// carregar
 function carregar(){
+  if(cache.lista){
+    cache.lista.forEach(l=>livrosMap[l.id]=l);
+    render(cache.lista);
+  }
+
   db.ref("livros").on("value",snap=>{
     let lista=[];
 
-    snap.forEach(l=>{
-      let v=l.val();
-      v.media=v.votes?v.totalStars/v.votes:0;
-      lista.push(v);
+    snap.forEach(i=>{
+      let l=i.val();
+      lista.push(l);
+      livrosMap[l.id]=l;
     });
 
-    trending.innerHTML=[...lista]
-      .sort((a,b)=>(b.views+b.media*10)-(a.views+a.media*10))
-      .slice(0,10)
-      .map(l=>card(l,"🔥")).join("");
+    lista.sort((a,b)=>score(b)-score(a));
 
-    ranking.innerHTML=[...lista]
-      .sort((a,b)=>b.media-a.media)
-      .slice(0,10)
-      .map((l,i)=>card(l,"#"+(i+1))).join("");
+    localStorage.setItem("cache",JSON.stringify({lista}));
 
-    geralList.innerHTML=lista.map(l=>card(l)).join("");
+    render(lista);
   });
 }
 
-// BUSCA
-function buscar(){
-  let t=search.value.toLowerCase();
-  document.querySelectorAll(".card").forEach(c=>{
-    c.style.display=c.innerText.toLowerCase().includes(t)?"block":"none";
-  });
+// render
+function render(lista){
+  document.getElementById("lista").innerHTML=
+    lista.map((l,i)=>card(l,i)).join("");
 }
 
 carregar();
