@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Open Book</title>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
+<!-- FIREBASE V8 (FUNCIONA COM SEU CÓDIGO) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
 <style>
 :root{
@@ -31,7 +32,6 @@ header{
   padding:20px;
   font-size:24px;
   color:var(--yellow);
-  letter-spacing:1px;
 }
 
 /* NAV */
@@ -93,12 +93,7 @@ input,select{
 .card img{width:100%;}
 
 .title{padding:6px;font-size:13px;}
-
-.genre{
-  font-size:11px;
-  padding:0 6px;
-  color:var(--accent);
-}
+.genre{font-size:11px;padding:0 6px;color:var(--accent);}
 
 /* BADGE */
 .badge{
@@ -139,7 +134,7 @@ input,select{
   font-weight:bold;
 }
 
-/* BOTÃO PUBLICAR TOP */
+/* BOTÃO PUBLICAR */
 .publishBtn{
   width:100%;
   padding:14px;
@@ -150,11 +145,6 @@ input,select{
   background:linear-gradient(45deg,var(--blue),var(--yellow));
   color:#000;
   box-shadow:0 0 20px rgba(56,189,248,.6);
-  transition:.3s;
-}
-
-.publishBtn:hover{
-  transform:scale(1.05);
 }
 
 /* SCREEN */
@@ -180,7 +170,6 @@ input,select{
 
 <!-- HOME -->
 <div id="home" class="screen active">
-
   <div style="padding:10px;">
     <input id="search" placeholder="Buscar..." oninput="buscar()">
   </div>
@@ -194,7 +183,6 @@ input,select{
     <h2>🏆 Ranking</h2>
     <div class="grid" id="ranking"></div>
   </div>
-
 </div>
 
 <!-- GERAL -->
@@ -210,7 +198,6 @@ input,select{
   <div style="padding:15px;">
     <input id="titulo" placeholder="Título">
     <input id="autor" placeholder="Autor">
-    <input id="ano" type="number" placeholder="Ano">
 
     <select id="publico">
       <option>livre</option>
@@ -234,7 +221,7 @@ input,select{
 </div>
 
 <script>
-// FIREBASE
+// CONFIG FIREBASE
 const firebaseConfig={
   apiKey:"SUA_API_KEY",
   databaseURL:"https://cintaslivro-default-rtdb.firebaseio.com/",
@@ -243,12 +230,13 @@ const firebaseConfig={
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db=firebase.database();
 const storage=firebase.storage();
 
 let fav=JSON.parse(localStorage.getItem("fav"))||{};
 
-// TROCAR
+// TROCAR TELA
 function trocar(t){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById(t).classList.add("active");
@@ -256,26 +244,34 @@ function trocar(t){
 
 // UPLOAD
 async function uploadLivro(){
-  let file=pdf.files[0];
-  if(!file) return alert("Selecione PDF");
+  try{
+    let file=document.getElementById("pdf").files[0];
+    if(!file) return alert("Selecione um PDF");
 
-  let ref=storage.ref("livros/"+Date.now());
-  await ref.put(file);
+    let ref=storage.ref("livros/"+Date.now()+"_"+file.name);
 
-  let url=await ref.getDownloadURL();
+    await ref.put(file);
 
-  db.ref("livros").push({
-    id:Date.now(),
-    titulo:titulo.value,
-    autor:autor.value,
-    ano:ano.value,
-    publico:publico.value,
-    genero:genero.value,
-    url,
-    totalStars:0,
-    votes:0,
-    views:0
-  });
+    let url=await ref.getDownloadURL();
+
+    await db.ref("livros").push({
+      id:Date.now(),
+      titulo:titulo.value,
+      autor:autor.value,
+      publico:publico.value,
+      genero:genero.value,
+      url,
+      totalStars:0,
+      votes:0,
+      views:0
+    });
+
+    alert("Publicado com sucesso 🚀");
+
+  }catch(e){
+    console.error(e);
+    alert("Erro ao publicar");
+  }
 }
 
 // AVALIAR
