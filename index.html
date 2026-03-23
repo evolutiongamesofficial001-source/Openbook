@@ -1,367 +1,381 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Book</title>
 
-<title>Book Hub</title>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"></script>
 
 <style>
-
 :root{
---bg:#0a0a0a;
---card:#141414;
---green:#00ff88;
---text:#e8e8e8;
+  --bg:#030712;
+  --card:#0f172a;
+  --yellow:#ffd60a;
+  --blue:#38bdf8;
+  --accent:#22c55e;
 }
 
 body{
-margin:0;
-background:var(--bg);
-color:var(--text);
-font-family:Arial;
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(180deg,#020617,#030712);
+  color:#fff;
 }
 
+/* HEADER */
 header{
-padding:18px;
-text-align:center;
-font-size:22px;
-color:var(--green);
-font-weight:bold;
+  text-align:center;
+  padding:20px;
+  font-size:24px;
+  color:var(--yellow);
+  letter-spacing:1px;
 }
 
-.container{
-padding:15px;
-padding-bottom:100px;
+/* NAV */
+nav{
+  display:flex;
+  gap:8px;
+  padding:10px;
 }
 
+nav button{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-weight:bold;
+  background:linear-gradient(45deg,var(--yellow),var(--blue));
+  color:#000;
+}
+
+/* INPUT */
+input,select{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:14px;
+  background:#020617;
+  color:#fff;
+  border:1px solid #111;
+}
+
+/* SECTION */
+.section{padding:10px;}
+.section h2{color:var(--blue);}
+
+/* GRID */
 .grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
 }
 
-.book{
-background:var(--card);
-border-radius:10px;
-overflow:hidden;
-animation:fade .4s;
-}
-
-.book img{
-width:100%;
-height:150px;
-object-fit:cover;
-}
-
-.book-title{
-padding:6px;
-font-size:13px;
-text-align:center;
-}
-
-button{
-width:100%;
-border:none;
-background:var(--green);
-padding:8px;
-font-weight:bold;
-}
-
-.tabs{
-display:flex;
-gap:8px;
-margin-bottom:12px;
-}
-
-.tab{
-flex:1;
-padding:10px;
-background:#111;
-text-align:center;
-border-radius:8px;
-cursor:pointer;
-}
-
-.tab.active{
-background:var(--green);
-color:black;
-}
-
-input{
-width:100%;
-padding:10px;
-margin-top:6px;
-margin-bottom:10px;
-background:#111;
-border:none;
-border-radius:8px;
-color:white;
-}
-
+/* CARD */
 .card{
-background:var(--card);
-padding:15px;
-border-radius:10px;
+  min-width:160px;
+  background:linear-gradient(145deg,#020617,#0f172a);
+  border-radius:18px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 0 15px rgba(0,0,0,.7);
+  transition:.3s;
 }
 
-.reader{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-display:none;
-flex-direction:column;
+.card:hover{
+  transform:translateY(-5px) scale(1.05);
+  box-shadow:0 0 25px rgba(56,189,248,.4);
 }
 
-.reader iframe{
-flex:1;
-border:none;
+.card img{width:100%;}
+
+.title{padding:6px;font-size:13px;}
+
+.genre{
+  font-size:11px;
+  padding:0 6px;
+  color:var(--accent);
 }
+
+/* BADGE */
+.badge{
+  position:absolute;
+  top:6px;
+  left:6px;
+  background:var(--yellow);
+  color:#000;
+  padding:3px 6px;
+  border-radius:6px;
+  font-size:11px;
+}
+
+/* FAVORITO */
+.fav{
+  position:absolute;
+  top:6px;
+  right:6px;
+  cursor:pointer;
+}
+
+/* STARS */
+.stars{
+  display:flex;
+  justify-content:center;
+}
+
+.star{cursor:pointer;}
+
+/* DOWNLOAD */
+.download{
+  margin:6px;
+  padding:6px;
+  text-align:center;
+  border-radius:10px;
+  background:linear-gradient(45deg,var(--yellow),var(--accent));
+  color:#000;
+  font-weight:bold;
+}
+
+/* BOTÃO PUBLICAR TOP */
+.publishBtn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:16px;
+  font-size:16px;
+  font-weight:bold;
+  background:linear-gradient(45deg,var(--blue),var(--yellow));
+  color:#000;
+  box-shadow:0 0 20px rgba(56,189,248,.6);
+  transition:.3s;
+}
+
+.publishBtn:hover{
+  transform:scale(1.05);
+}
+
+/* SCREEN */
+.screen{display:none;}
+.active{display:block;animation:fade .3s;}
 
 @keyframes fade{
-from{opacity:0}
-to{opacity:1}
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1;}
 }
-
 </style>
 </head>
+
 <body>
 
-<header>📚 Book Hub</header>
+<header>📚 Open Book</header>
 
-<div class="container">
+<nav>
+  <button onclick="trocar('home')">Explorar</button>
+  <button onclick="trocar('geral')">Geral</button>
+  <button onclick="trocar('upload')">Publicar</button>
+</nav>
 
-<div class="tabs">
-<div class="tab active" onclick="trocar('biblioteca',this)">🌎 Biblioteca</div>
-<div class="tab" onclick="trocar('meus',this)">📚 Meus</div>
-<div class="tab" onclick="trocar('publicar',this)">⬆️ Publicar</div>
-</div>
+<!-- HOME -->
+<div id="home" class="screen active">
 
-<div id="biblioteca"></div>
+  <div style="padding:10px;">
+    <input id="search" placeholder="Buscar..." oninput="buscar()">
+  </div>
 
-<div id="meus" style="display:none"></div>
+  <div class="section">
+    <h2>🔥 Trending</h2>
+    <div class="grid" id="trending"></div>
+  </div>
 
-<div id="publicar" style="display:none">
-
-<div class="card">
-
-<h3>Publicar Livro</h3>
-
-<input id="nome" placeholder="Nome do livro">
-
-<input type="file" id="pdf" accept="application/pdf">
-
-<button onclick="publicar()">Enviar Livro</button>
-
-</div>
+  <div class="section">
+    <h2>🏆 Ranking</h2>
+    <div class="grid" id="ranking"></div>
+  </div>
 
 </div>
 
+<!-- GERAL -->
+<div id="geral" class="screen">
+  <div class="section">
+    <h2>📚 Todos os livros</h2>
+    <div class="grid" id="geralList"></div>
+  </div>
 </div>
 
-<div class="reader" id="reader">
-<button onclick="fechar()">Fechar</button>
-<iframe id="pdfFrame"></iframe>
+<!-- UPLOAD -->
+<div id="upload" class="screen">
+  <div style="padding:15px;">
+    <input id="titulo" placeholder="Título">
+    <input id="autor" placeholder="Autor">
+    <input id="ano" type="number" placeholder="Ano">
+
+    <select id="publico">
+      <option>livre</option>
+      <option>jovem</option>
+      <option>adulto</option>
+    </select>
+
+    <select id="genero">
+      <option>Fantasia</option>
+      <option>Romance</option>
+      <option>Terror</option>
+      <option>Ficção</option>
+      <option>Ação</option>
+      <option>Outro</option>
+    </select>
+
+    <input type="file" id="pdf" accept="application/pdf">
+
+    <button class="publishBtn" onclick="uploadLivro()">🚀 Publicar Livro</button>
+  </div>
 </div>
 
 <script>
-
+// FIREBASE
 const firebaseConfig={
-databaseURL:"https://contas-3-174fb-default-rtdb.firebaseio.com/"
+  apiKey:"SUA_API_KEY",
+  databaseURL:"https://cintaslivro-default-rtdb.firebaseio.com/",
+  projectId:"cintaslivro",
+  storageBucket:"cintaslivro.appspot.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const storage=firebase.storage();
+
+let fav=JSON.parse(localStorage.getItem("fav"))||{};
+
+// TROCAR
+function trocar(t){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(t).classList.add("active");
 }
 
-firebase.initializeApp(firebaseConfig)
+// UPLOAD
+async function uploadLivro(){
+  let file=pdf.files[0];
+  if(!file) return alert("Selecione PDF");
 
-const db=firebase.database().ref("bookhub")
+  let ref=storage.ref("livros/"+Date.now());
+  await ref.put(file);
 
-let livros=[]
+  let url=await ref.getDownloadURL();
 
-function trocar(sec,el){
-
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
-
-el.classList.add("active")
-
-biblioteca.style.display="none"
-meus.style.display="none"
-publicar.style.display="none"
-
-document.getElementById(sec).style.display="block"
-
+  db.ref("livros").push({
+    id:Date.now(),
+    titulo:titulo.value,
+    autor:autor.value,
+    ano:ano.value,
+    publico:publico.value,
+    genero:genero.value,
+    url,
+    totalStars:0,
+    votes:0,
+    views:0
+  });
 }
 
-function publicar(){
-
-let nome=document.getElementById("nome").value
-
-let file=document.getElementById("pdf").files[0]
-
-if(!file)return alert("Escolha um PDF")
-
-let reader=new FileReader()
-
-reader.onload=e=>{
-
-db.push({
-
-nome:nome,
-pdf:e.target.result,
-data:Date.now()
-
-})
-
-alert("Livro publicado!")
-
+// AVALIAR
+function avaliar(id,n){
+  db.ref("livros").once("value",snap=>{
+    snap.forEach(i=>{
+      let l=i.val();
+      if(l.id==id){
+        db.ref("livros/"+i.key).update({
+          totalStars:(l.totalStars||0)+n,
+          votes:(l.votes||0)+1
+        });
+      }
+    });
+  });
 }
 
-reader.readAsDataURL(file)
-
+// VIEW
+function addView(id){
+  db.ref("livros").once("value",snap=>{
+    snap.forEach(i=>{
+      let l=i.val();
+      if(l.id==id){
+        db.ref("livros/"+i.key).update({
+          views:(l.views||0)+1
+        });
+      }
+    });
+  });
 }
 
-db.on("value",snap=>{
-
-livros=[]
-
-snap.forEach(i=>{
-let d=i.val()
-d.id=i.key
-livros.push(d)
-})
-
-render()
-
-})
-
-async function gerarCapa(pdf){
-
-let loading=pdfjsLib.getDocument(pdf)
-
-let doc=await loading.promise
-
-let page=await doc.getPage(1)
-
-let canvas=document.createElement("canvas")
-
-let ctx=canvas.getContext("2d")
-
-let viewport=page.getViewport({scale:1})
-
-canvas.width=viewport.width
-canvas.height=viewport.height
-
-await page.render({
-canvasContext:ctx,
-viewport:viewport
-}).promise
-
-return canvas.toDataURL()
-
+// FAVORITO
+function toggleFav(id){
+  fav[id]=!fav[id];
+  localStorage.setItem("fav",JSON.stringify(fav));
+  carregar();
 }
 
-async function render(){
+// CARD
+function card(l,b){
+  let media=l.votes?l.totalStars/l.votes:0;
+  let f=fav[l.id]?"❤️":"🤍";
 
-let grid=document.createElement("div")
-grid.className="grid"
+  return `
+  <div class="card">
+    ${b?`<div class="badge">${b}</div>`:""}
+    <div class="fav" onclick="toggleFav(${l.id})">${f}</div>
 
-for(let l of livros){
+    <img src="https://image.thum.io/get/pdf/${l.url}" onclick="addView(${l.id})">
 
-let capa=await gerarCapa(l.pdf)
+    <div class="title">${l.titulo}</div>
+    <div class="genre">${l.genero}</div>
 
-let div=document.createElement("div")
-div.className="book"
+    <div class="stars">
+      ${[1,2,3,4,5].map(n=>`
+        <span class="star" onclick="avaliar(${l.id},${n})">
+          ${n<=Math.round(media)?"⭐":"☆"}
+        </span>`).join("")}
+    </div>
 
-div.innerHTML=`
-
-<img src="${capa}">
-
-<div class="book-title">${l.nome}</div>
-
-<button onclick="ler('${l.pdf}')">Ler</button>
-<button onclick="salvar('${l.id}')">Salvar</button>
-
-`
-
-grid.appendChild(div)
-
+    <a href="${l.url}" download onclick="addView(${l.id})">
+      <div class="download">⬇ Baixar</div>
+    </a>
+  </div>`;
 }
 
-biblioteca.innerHTML=""
-biblioteca.appendChild(grid)
+// REALTIME
+function carregar(){
+  db.ref("livros").on("value",snap=>{
+    let lista=[];
 
-renderMeus()
+    snap.forEach(l=>{
+      let v=l.val();
+      v.media=v.votes?v.totalStars/v.votes:0;
+      lista.push(v);
+    });
 
+    trending.innerHTML=[...lista]
+      .sort((a,b)=>(b.views+b.media*10)-(a.views+a.media*10))
+      .slice(0,10)
+      .map(l=>card(l,"🔥")).join("");
+
+    ranking.innerHTML=[...lista]
+      .sort((a,b)=>b.media-a.media)
+      .slice(0,10)
+      .map((l,i)=>card(l,"#"+(i+1))).join("");
+
+    geralList.innerHTML=lista.map(l=>card(l)).join("");
+  });
 }
 
-function ler(pdf){
-
-pdfFrame.src=pdf
-reader.style.display="flex"
-
+// BUSCA
+function buscar(){
+  let t=search.value.toLowerCase();
+  document.querySelectorAll(".card").forEach(c=>{
+    c.style.display=c.innerText.toLowerCase().includes(t)?"block":"none";
+  });
 }
 
-function fechar(){
-
-reader.style.display="none"
-pdfFrame.src=""
-
-}
-
-function salvar(id){
-
-let biblio=JSON.parse(localStorage.getItem("bookhub_biblioteca")||"[]")
-
-if(!biblio.includes(id)){
-
-biblio.push(id)
-
-localStorage.setItem("bookhub_biblioteca",JSON.stringify(biblio))
-
-}
-
-renderMeus()
-
-}
-
-function renderMeus(){
-
-let ids=JSON.parse(localStorage.getItem("bookhub_biblioteca")||"[]")
-
-let grid=document.createElement("div")
-grid.className="grid"
-
-livros.forEach(l=>{
-
-if(!ids.includes(l.id))return
-
-let div=document.createElement("div")
-
-div.className="book"
-
-div.innerHTML=`
-
-<div class="book-title">${l.nome}</div>
-
-<button onclick="ler('${l.pdf}')">Ler</button>
-
-`
-
-grid.appendChild(div)
-
-})
-
-meus.innerHTML=""
-meus.appendChild(grid)
-
-}
-
+carregar();
 </script>
 
 </body>
