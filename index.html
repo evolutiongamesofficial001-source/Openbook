@@ -2,219 +2,38 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-
-<!-- 🚫 SEM ZOOM -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Open Book</title>
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <style>
-:root{
-  --bg:#020617;
-  --card:#0f172a;
-  --yellow:#ffd60a;
-  --blue:#38bdf8;
-  --accent:#22c55e;
-}
-
-body{
-  margin:0;
-  font-family:sans-serif;
-  background:#020617;
-  color:#fff;
-}
-
-header{
-  text-align:center;
-  padding:15px;
-  font-size:22px;
-  background:linear-gradient(45deg,var(--yellow),var(--blue));
-  -webkit-background-clip:text;
-  color:transparent;
-}
-
-nav{
-  display:flex;
-  gap:6px;
-  padding:10px;
-}
-
-nav button{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(45deg,var(--yellow),var(--blue));
-  color:#000;
-  font-weight:bold;
-  font-size:12px;
-}
-
-input,select{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:10px;
-  border:none;
-  background:#0f172a;
-  color:#fff;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  padding:10px;
-}
-
-.card{
-  background:#0f172a;
-  border-radius:14px;
-  overflow:hidden;
-  position:relative;
-}
-
-.card img{
-  width:100%;
-  height:160px;
-  object-fit:cover;
-}
-
-.info{
-  padding:6px;
-  font-size:13px;
-}
-
-.download{
-  background:linear-gradient(45deg,#0ea5e9,#38bdf8);
-  color:#fff;
-  padding:8px;
-  margin:6px;
-  text-align:center;
-  border-radius:10px;
-  font-weight:bold;
-}
-
-.favorite{
-  position:absolute;
-  top:5px;
-  right:5px;
-  font-size:20px;
-}
-
-.screen{display:none;}
-.active{display:block;}
-
-/* 🔥 LOADER NOVO */
-#loader{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,.9);
-display:none;
-align-items:center;
-justify-content:center;
-flex-direction:column;
-z-index:999;
-}
-
-/* barra */
-.bar{
-width:80%;
-height:10px;
-background:#222;
-border-radius:10px;
-overflow:hidden;
-margin-top:20px;
-}
-
-.progress{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#38bdf8,#22c55e);
-transition:width .3s;
-}
-
-/* texto */
-#loader p{
-margin-top:15px;
-font-size:14px;
-opacity:.8;
-}
-  
- .configBtn{
-  position:absolute;
-  right:15px;
-  top:12px;
-  border:none;
-  background:transparent;
-  font-size:20px;
-  color:#38bdf8;
-}
+body{margin:0;font-family:sans-serif;background:#020617;color:#fff;}
+header{text-align:center;padding:15px;font-size:22px;color:#38bdf8;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px;}
+.card{background:#0f172a;border-radius:12px;padding:10px;}
+button{padding:10px;margin-top:5px;border:none;border-radius:10px;background:#38bdf8;}
+input{width:100%;padding:10px;margin:5px 0;border-radius:10px;border:none;}
+#loader{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000a;align-items:center;justify-content:center;}
 </style>
 </head>
 
 <body>
 
-<header>
-  📚 Open Book
-  <button class="configBtn" onclick="abrirConfig()">     ⚙</button>
-</header>
+<header>📚 Open Book</header>
 
-<nav>
-  <button onclick="trocar('home')">Explorar</button>
-  <button onclick="trocar('favoritos')">⭐ Favoritos</button>
-  <button onclick="trocar('historico')">🕒 Histórico</button>
-  <button onclick="trocar('upload')">Publicar</button>
-</nav>
-
-<input id="busca" placeholder="🔍 Buscar..." oninput="buscar()">
-
-<div id="home" class="screen active">
-  <div class="grid" id="lista"></div>
+<div style="padding:10px;">
+<input id="titulo" placeholder="Título">
+<input id="autor" placeholder="Autor">
+<input type="file" id="pdf" accept="application/pdf">
+<button onclick="uploadLivro()">Publicar</button>
 </div>
 
-<div id="favoritos" class="screen">
-  <div class="grid" id="listaFav"></div>
-</div>
+<div class="grid" id="lista"></div>
 
-<div id="historico" class="screen">
-  <div class="grid" id="listaHist"></div>
-</div>
-
-<div id="upload" class="screen">
-  <input id="titulo" placeholder="Título">
-  <input id="autor" placeholder="Autor">
-
-  <select id="publico">
-    <option>livre</option>
-    <option>jovem</option>
-    <option>adulto</option>
-  </select>
-
-  <select id="genero">
-    <option>Fantasia</option>
-    <option>Romance</option>
-    <option>Terror</option>
-    <option>Ficção</option>
-  </select>
-
-  <input type="file" id="pdf" accept="application/pdf">
-  <button onclick="uploadLivro()">🚀 Publicar</button>
-</div>
-
-<!-- 🔥 LOADER -->
-<div id="loader">
-  <h3>Baixando livro...</h3>
-  <div class="bar">
-    <div class="progress" id="progress"></div>
-  </div>
-  <p id="status">Preparando...</p>
-</div>
+<div id="loader">Processando...</div>
 
 <script>
 const firebaseConfig={
@@ -227,155 +46,124 @@ const db=firebase.database();
 
 let livrosMap={};
 
-let favoritos = JSON.parse(localStorage.getItem("fav")) || [];
-let historico = JSON.parse(localStorage.getItem("hist")) || [];
+// 🔥 CONFIG
+const CHUNK_SIZE = 200000; // tamanho do pedaço (ajuste se quiser)
 
-// telas
-function trocar(t){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(t).classList.add("active");
+// 🔥 UPLOAD DIVIDIDO
+function uploadLivro(){
+  let titulo= tituloEl.value;
+  let autor= autorEl.value;
+  let file= pdf.files[0];
 
-  if(t==="favoritos") renderFav();
-  if(t==="historico") renderHist();
-}
-
-// favorito
-function toggleFav(id){
-  if(favoritos.includes(id)){
-    favoritos = favoritos.filter(i=>i!=id);
-  }else{
-    favoritos.push(id);
+  if(!titulo || !autor || !file){
+    alert("Preencha tudo!");
+    return;
   }
-  localStorage.setItem("fav",JSON.stringify(favoritos));
-  render(Object.values(livrosMap));
+
+  let reader=new FileReader();
+
+  reader.onload=function(e){
+    let base64 = e.target.result.split(",")[1];
+
+    let partes = [];
+    for(let i=0;i<base64.length;i+=CHUNK_SIZE){
+      partes.push(base64.substring(i,i+CHUNK_SIZE));
+    }
+
+    let id = Date.now();
+
+    let livro={
+      id,
+      titulo,
+      autor,
+      totalPartes: partes.length,
+      capa:"https://via.placeholder.com/300x400?text=Livro"
+    };
+
+    db.ref("livros/"+id+"/info").set(livro);
+
+    partes.forEach((p,i)=>{
+      db.ref("livros/"+id+"/partes/"+i).set(p);
+    });
+
+    alert("Publicado!");
+  };
+
+  reader.readAsDataURL(file);
 }
 
-// histórico
-function addHistorico(id){
-  historico = historico.filter(i=>i!=id);
-  historico.unshift(id);
-  historico = historico.slice(0,20);
-  localStorage.setItem("hist",JSON.stringify(historico));
-}
-
-// 🔥 DOWNLOAD COM ANIMAÇÃO
+// 🔥 DOWNLOAD RECONSTRUINDO
 function baixarLivro(id){
-  let l=livrosMap[id];
-  if(!l) return;
-
-  addHistorico(id);
-
   loader.style.display="flex";
 
-  let progress = document.getElementById("progress");
-  let status = document.getElementById("status");
+  db.ref("livros/"+id).once("value").then(snap=>{
+    let data = snap.val();
 
-  progress.style.width="0%";
-  status.innerText="Preparando...";
+    let partes = data.partes;
+    let total = data.info.totalPartes;
 
-  let p=0;
+    let base64="";
 
-  let anim = setInterval(()=>{
-    p+=10;
-    progress.style.width=p+"%";
-
-    if(p==30) status.innerText="Processando PDF...";
-    if(p==70) status.innerText="Finalizando...";
-
-    if(p>=100){
-      clearInterval(anim);
-
-      const arr=l.pdf.split(',');
-      const bstr=atob(arr[1]);
-      let n=bstr.length;
-      const u8arr=new Uint8Array(n);
-      while(n--) u8arr[n]=bstr.charCodeAt(n);
-
-      const blob=new Blob([u8arr],{type:"application/pdf"});
-      const url=URL.createObjectURL(blob);
-
-      const a=document.createElement("a");
-      a.href=url;
-      a.download=l.titulo+".pdf";
-      a.click();
-
-      URL.revokeObjectURL(url);
-
-      setTimeout(()=>{
-        loader.style.display="none";
-      },500);
+    for(let i=0;i<total;i++){
+      base64 += partes[i];
     }
-  },120);
+
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const blob = new Blob([new Uint8Array(byteNumbers)], {type: "application/pdf"});
+    const url = URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=data.info.titulo+".pdf";
+    a.click();
+
+    loader.style.display="none";
+  });
 }
 
-// card
+// UI
 function card(l){
-  let fav = favoritos.includes(l.id);
-
   return `
   <div class="card">
-    <div class="favorite" onclick="toggleFav(${l.id})">
-      ${fav?"🌟":"🫥"}
-    </div>
-
-    <img src="${l.capa}">
-    <div class="info">
-      <b>${l.titulo}</b><br>
-      ${l.autor}<br>
-      ${l.publico} • ${l.genero}
-    </div>
-
-    <div class="download" onclick="baixar Livro(${l.id})">
-      ⬇ Baixar
-    </div>
+    <b>${l.titulo}</b><br>
+    ${l.autor}<br>
+    <button onclick="baixarLivro(${l.id})">Baixar</button>
   </div>`;
 }
 
-// render
 function render(lista){
-  lista.sort((a,b)=>b.id-a.id);
   document.getElementById("lista").innerHTML =
     lista.map(l=>card(l)).join("");
 }
 
-function renderFav(){
-  let lista = favoritos.map(id=>livrosMap[id]).filter(Boolean);
-  listaFav.innerHTML = lista.map(l=>card(l)).join("");
-}
-
-function renderHist(){
-  let lista = historico.map(id=>livrosMap[id]).filter(Boolean);
-  listaHist.innerHTML = lista.map(l=>card(l)).join("");
-}
-
-// busca
-function buscar(){
-  let termo=busca.value.toLowerCase();
-  let filtrados=Object.values(livrosMap).filter(l=>{
-    let txt=(l.titulo+l.autor+l.genero+l.publico).toLowerCase();
-    return txt.includes(termo);
-  });
-  render(filtrados);
-}
-
-// firebase
+// carregar
 function carregar(){
   db.ref("livros").on("value",snap=>{
     let lista=[];
     snap.forEach(i=>{
-      let l=i.val();
-      lista.push(l);
-      livrosMap[l.id]=l;
+      let val=i.val();
+      if(val.info){
+        lista.push(val.info);
+        livrosMap[val.info.id]=val.info;
+      }
     });
     render(lista);
   });
 }
 
 carregar();
-  
- function abrirConfig(){
-  window.location.href = "configuracao.html";
-}
+
+// refs
+const tituloEl=document.getElementById("titulo");
+const autorEl=document.getElementById("autor");
+const pdf=document.getElementById("pdf");
+const loader=document.getElementById("loader");
 </script>
 
 </body>
