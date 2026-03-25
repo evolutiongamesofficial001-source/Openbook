@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Configurações</title>
+
+<style>
+:root{
+  --bg:#020617;
+  --card:#0f172a;
+  --blue:#38bdf8;
+  --green:#22c55e;
+}
+
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:var(--bg);
+  color:#fff;
+}
+
+header{
+  text-align:center;
+  padding:15px;
+  font-size:20px;
+}
+
+/* CARD */
+.box{
+  background:var(--card);
+  margin:10px;
+  padding:15px;
+  border-radius:14px;
+}
+
+/* TOGGLE */
+.toggle{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+}
+
+.switch{
+  width:50px;
+  height:26px;
+  background:#333;
+  border-radius:20px;
+  position:relative;
+  transition:.3s;
+}
+
+.switch::after{
+  content:"";
+  width:20px;
+  height:20px;
+  background:#fff;
+  border-radius:50%;
+  position:absolute;
+  top:3px;
+  left:3px;
+  transition:.3s;
+}
+
+.switch.active{
+  background:var(--green);
+}
+
+.switch.active::after{
+  left:27px;
+}
+
+/* BOTÃO */
+button{
+  width:90%;
+  margin:10px auto;
+  display:block;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#0ea5e9,#38bdf8);
+  color:#000;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<header>⚙ Configurações</header>
+
+<div class="box">
+  <b>⚡ Download</b>
+
+  <div class="toggle">
+    <span>Maior velocidade de download</span>
+    <div id="velocidade" class="switch"></div>
+  </div>
+
+  <div class="toggle">
+    <span>Maior segurança no download</span>
+    <div id="seguranca" class="switch"></div>
+  </div>
+</div>
+
+<button onclick="voltar()">⬅ Voltar para o App</button>
+
+<script>
+/* CONFIG PADRÃO */
+let config = JSON.parse(localStorage.getItem("config")) || {
+  velocidade:false,   // padrão OFF
+  seguranca:true      // padrão ON
+};
+
+/* SALVAR */
+function salvar(){
+  localStorage.setItem("config", JSON.stringify(config));
+}
+
+/* TOGGLE */
+function toggle(el, key){
+  config[key] = !config[key];
+
+  if(config[key]){
+    el.classList.add("active");
+  }else{
+    el.classList.remove("active");
+  }
+
+  salvar();
+}
+
+/* INIT */
+function init(){
+  const vel = document.getElementById("velocidade");
+  const seg = document.getElementById("seguranca");
+
+  if(config.velocidade) vel.classList.add("active");
+  if(config.seguranca) seg.classList.add("active");
+
+  vel.onclick = ()=>toggle(vel,"velocidade");
+  seg.onclick = ()=>toggle(seg,"seguranca");
+}
+
+init();
+
+/* 🔥 VOLTAR SEM DELAY */
+function voltar(){
+  window.location.replace("index.html");
+}
+</script>
+
+</body>
+</html>
